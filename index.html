@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Collaborative Whiteboard</title>
+    <title>Interactive GoodNotes-Like Whiteboard</title>
     <link rel="stylesheet" href="/style.css">
     <style>
         body {
@@ -13,57 +13,124 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start;
             min-height: 100vh;
-            background-color: #f4f4f4;
+            background-color: #f0f4f8;
+            position: relative;
         }
         .toolbar {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            z-index: 10;
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 10px;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
+            flex-direction: column;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .toolbar label {
+            margin-bottom: 5px;
+            font-size: 14px;
         }
         .toolbar input,
         .toolbar button {
-            margin: 0 10px;
+            margin-bottom: 10px;
+            font-size: 14px;
         }
-        #colorPicker {
-            cursor: pointer;
-        }
-        #brushSize {
+        .toolbar input[type="range"] {
             width: 100px;
         }
-        #clearBtn {
-            padding: 10px;
-            font-size: 16px;
-            cursor: pointer;
+        .toolbar button {
+            padding: 8px;
             background-color: #ff4747;
             color: white;
             border: none;
             border-radius: 5px;
+            cursor: pointer;
         }
-        #clearBtn:hover {
+        .toolbar button:hover {
             background-color: #ff1e1e;
         }
         canvas {
             border: 2px solid #333;
             background-color: white;
-            cursor: crosshair;
             display: block;
+            margin-top: 50px;
+            cursor: crosshair;
+            background-image: linear-gradient(to bottom, #e6e6e6 1px, transparent 1px), linear-gradient(to right, #e6e6e6 1px, transparent 1px);
+            background-size: 20px 20px;
         }
     </style>
 </head>
 <body>
-<div class="toolbar">
-    <label for="colorPicker">Choose Brush Color:</label>
-    <input type="color" id="colorPicker" value="#000000" aria-label="Select color for drawing">
-    
-    <label for="brushSize">Brush Size:</label>
-    <input type="range" id="brushSize" min="1" max="20" value="5" aria-label="Select brush size">
-    
-    <button id="clearBtn" title="Clear the whiteboard">Clear Canvas</button>
-</div>
-<canvas id="whiteboard" width="800" height="600" aria-label="Canvas for collaborative drawing"></canvas>
-<script type="module" src="/main.js"></script>
+    <div class="toolbar">
+        <label for="colorPicker">Brush Color:</label>
+        <input type="color" id="colorPicker" value="#000000" aria-label="Select brush color">
+        
+        <label for="brushSize">Brush Size:</label>
+        <input type="range" id="brushSize" min="1" max="20" value="5" aria-label="Select brush size">
+        
+        <button id="clearBtn" title="Clear the whiteboard">Clear Canvas</button>
+    </div>
+    <canvas id="whiteboard" width="800" height="600" aria-label="Canvas for collaborative drawing"></canvas>
+
+    <script type="module">
+        const canvas = document.getElementById('whiteboard');
+        const ctx = canvas.getContext('2d');
+        const colorPicker = document.getElementById('colorPicker');
+        const brushSizeInput = document.getElementById('brushSize');
+        const clearBtn = document.getElementById('clearBtn');
+
+        let drawing = false;
+        let currentColor = colorPicker.value;
+        let currentBrushSize = brushSizeInput.value;
+
+        // Update brush size
+        brushSizeInput.addEventListener('input', (event) => {
+            currentBrushSize = event.target.value;
+        });
+
+        // Update color
+        colorPicker.addEventListener('input', (event) => {
+            currentColor = event.target.value;
+        });
+
+        // Start drawing on mouse down
+        canvas.addEventListener('mousedown', (event) => {
+            drawing = true;
+            draw(event);
+        });
+
+        // Stop drawing on mouse up or mouse out
+        canvas.addEventListener('mouseup', () => {
+            drawing = false;
+        });
+        canvas.addEventListener('mouseout', () => {
+            drawing = false;
+        });
+
+        // Draw on the canvas
+        canvas.addEventListener('mousemove', (event) => {
+            if (drawing) {
+                draw(event);
+            }
+        });
+
+        // Drawing function
+        function draw(event) {
+            ctx.beginPath();
+            ctx.arc(event.offsetX, event.offsetY, currentBrushSize, 0, Math.PI * 2);
+            ctx.fillStyle = currentColor;
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        // Clear the canvas
+        clearBtn.addEventListener('click', () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+    </script>
 </body>
 </html>
